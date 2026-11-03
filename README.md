@@ -62,8 +62,6 @@ end
 handle.release
 ```
 
-For compatibility with the TypeScript API, `Handle#aquire` exists as an alias for `Handle#acquire`. Prefer `acquire`.
-
 ### Configuration object
 
 Named options can be captured in a reusable `Semafor::Config`:

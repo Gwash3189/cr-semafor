@@ -25,13 +25,6 @@ module Semafor
       Internal::Execution(T).new(@semaphore, @config, lease, block).run
     end
 
-    # Compatibility alias for the TypeScript API's `aquire` typo.
-    #
-    # Prefer `#acquire`.
-    def aquire(&block : Lease, Signal -> T) : Result(T) forall T
-      acquire { |lease, signal| block.call(lease, signal) }
-    end
-
     # Releases leases acquired through this handle.
     #
     # If the handle has not acquired any leases, all leases for the key are
