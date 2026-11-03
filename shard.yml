@@ -1,0 +1,13 @@
+name: cr-semafor
+version: 0.1.0
+
+authors:
+  - Adam Beck <adamb3189@gmail.com>
+
+crystal: ">= 1.20.0"
+
+license: MIT
+
+description: |
+  A lightweight Crystal library for bounding concurrent work with keyed semaphores,
+  acquisition wait timeouts, and execution time limits.
