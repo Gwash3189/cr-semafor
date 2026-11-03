@@ -1,5 +1,7 @@
 # cr-semafor
 
+[![CI](https://github.com/Gwash3189/cr-semafor/actions/workflows/ci.yml/badge.svg)](https://github.com/Gwash3189/cr-semafor/actions/workflows/ci.yml)
+
 A lightweight Crystal library for bounding concurrent work with keyed semaphores, acquisition wait timeouts, and execution time limits.
 
 `cr-semafor` is a Crystal port of [`semafor`](https://github.com/Gwash3189/semafor), a TypeScript library for controlling how many tasks may run at once for a given key, how long callers are willing to wait to acquire a permit, and how long the guarded work may run.
@@ -43,6 +45,42 @@ result.release.call
 ```
 
 `release` is idempotent, so calling it from both the block's `ensure` and the returned result is safe.
+
+### Independent instance API
+
+Create a standalone semaphore instance when state does not need to be shared by key:
+
+```crystal
+semaphore = Semafor.new(workers: 35, wait: 5.seconds, limit: 2.5.seconds)
+
+semaphore.acquire do
+  begin
+    do_work
+  ensure
+    semaphore.release
+  end
+end
+```
+
+`Semafor.new` creates an independent `Semafor::Semaphore`; it is not registered globally. The instance API is block-scoped: the permit is released automatically when the block exits, and `semaphore.release` can be used to release it early. An optional key can be supplied for error messages:
+
+```crystal
+semaphore = Semafor.new("image-resizer", workers: 4)
+```
+
+The block can also receive the lease and signal:
+
+```crystal
+semaphore.acquire do |lease, signal|
+  begin
+    do_work(signal)
+  ensure
+    lease.call
+  end
+end
+```
+
+Use `Semafor.semaphore` when multiple callers should share state for the same key.
 
 ### Handle API
 
@@ -121,8 +159,9 @@ The signal also supports `#cancelled?`, `#reason`, and `#on_cancel`.
 ## Development
 
 ```bash
-crystal build src/cr-semafor.cr   # compile the library
-crystal tool format --check src   # check formatting
+crystal spec                         # run the specs
+crystal tool format --check src spec bench
+crystal run bench/semaphore_bench.cr # run the benchmark
 ```
 
 ## License

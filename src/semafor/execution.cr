@@ -13,6 +13,7 @@ module Semafor
         @config : Config,
         @lease : Lease,
         @block : Proc(Lease, Signal, T),
+        @on_start : Proc(Lease, Nil)? = nil,
       )
       end
 
@@ -27,6 +28,8 @@ module Semafor
       end
 
       private def run_without_limit(signal : Signal) : Result(T)
+        @on_start.try &.call(@lease)
+
         begin
           return Result(T).new(@block.call(@lease, signal), @lease)
         rescue error
@@ -40,6 +43,7 @@ module Semafor
 
         spawn do
           begin
+            @on_start.try &.call(@lease)
             outcomes.send(Success(T).new(@block.call(@lease, signal)))
           rescue error
             outcomes.send(Failure.new(error))

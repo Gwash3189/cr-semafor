@@ -8,6 +8,7 @@ require "./semafor/result"
 require "./semafor/keyed_semaphore"
 require "./semafor/execution"
 require "./semafor/handle"
+require "./semafor/semaphore"
 
 # Bounded keyed semaphores for Crystal.
 #
@@ -30,6 +31,30 @@ module Semafor
 
   @@registry = {} of String => Internal::KeyedSemaphore
   @@registry_mutex = Sync::Mutex.new
+
+  # Creates an independent semaphore instance.
+  #
+  # The instance is not registered globally. Use `.semaphore` when multiple
+  # callers should share state for the same key.
+  def self.new(
+    key : String = "semafor",
+    *,
+    workers : Int32 = 1,
+    wait : Time::Span? = nil,
+    limit : Time::Span? = nil,
+  ) : Semaphore
+    Semaphore.new(key, workers: workers, wait: wait, limit: limit)
+  end
+
+  # Creates an independent semaphore instance from a `Config`.
+  def self.new(config : Config, key : String = "semafor") : Semaphore
+    Semaphore.new(key, config)
+  end
+
+  # Creates an independent semaphore instance from a key and `Config`.
+  def self.new(key : String, config : Config) : Semaphore
+    Semaphore.new(key, config)
+  end
 
   # Creates a reusable handle for a key.
   #
