@@ -5,10 +5,12 @@ require "./semafor/config"
 require "./semafor/lease"
 require "./semafor/signal"
 require "./semafor/result"
+require "./semafor/instance_state"
 require "./semafor/keyed_semaphore"
 require "./semafor/execution"
 require "./semafor/handle"
 require "./semafor/semaphore"
+require "./semafor/macros"
 
 # Bounded keyed semaphores for Crystal.
 #
@@ -146,6 +148,11 @@ module Semafor
   private def self.acquire(key : String, config : Config) : {Internal::KeyedSemaphore, Lease}
     semaphore = fetch_semaphore(key, config)
     {semaphore, semaphore.acquire(config.wait)}
+  end
+
+  # :nodoc:
+  def self.__semaphore_for(key : String, config : Config) : Internal::KeyedSemaphore
+    fetch_semaphore(key, config)
   end
 
   private def self.fetch_semaphore(key : String, config : Config) : Internal::KeyedSemaphore

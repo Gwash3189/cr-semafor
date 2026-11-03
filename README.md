@@ -82,6 +82,32 @@ end
 
 Use `Semafor.semaphore` when multiple callers should share state for the same key.
 
+### Wrapped instance methods
+
+Include `Semafor` and declare a semaphore before the method:
+
+```crystal
+class ImageProcessor
+  include Semafor
+
+  semafor key: :image_processing, wait: 5.seconds, workers: 4, limit: 30.seconds, method: :process
+
+  def process(image)
+    begin
+      do_work(image)
+    ensure
+      release.call
+    end
+  end
+end
+```
+
+- The key is shared through the global keyed registry, including with `Semafor.semafor` and `Semafor.semaphore`.
+- `release.call` releases the current fiber's permit. The wrapper also releases automatically when the method exits.
+- `release` raises `Semafor::Error` when there is no active acquisition.
+- The `semafor` declaration must appear before the wrapped method.
+- Only public instance methods are supported. Wrapped methods cannot use `super` or `previous_def` in their bodies, and any block argument must be named and type-restricted.
+
 ### Handle API
 
 Create a reusable handle for a key:
